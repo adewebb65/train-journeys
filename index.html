@@ -37,4 +37,636 @@
     header h1 {
       font-size: 20px;
       font-weight: 700;
-      letter-spacing: -
+      letter-spacing: -0.3px;
+    }
+
+    header p {
+      font-size: 12px;
+      opacity: 0.6;
+      margin-top: 2px;
+    }
+
+    .filter-bar {
+      display: flex;
+      gap: 8px;
+      padding: 12px 16px;
+      background: white;
+      border-bottom: 1px solid #e8ecf0;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .filter-btn {
+      white-space: nowrap;
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1.5px solid #d0d8e4;
+      background: white;
+      color: #555;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .filter-btn.active {
+      background: #1a1a2e;
+      color: white;
+      border-color: #1a1a2e;
+    }
+
+    .journey-list {
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #888;
+      padding: 4px 0;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    .card:active { transform: scale(0.98); }
+
+    .card.expanded {
+      box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    }
+
+    .card-header {
+      padding: 16px;
+    }
+
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .journey-type-badge {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: #e8f4fd;
+      color: #1a6fb5;
+    }
+
+    .journey-type-badge.return {
+      background: #edf7ed;
+      color: #2e7d32;
+    }
+
+    .cost-badge {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1a1a2e;
+    }
+
+    .route-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .station-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: #1a1a2e;
+      flex: 1;
+    }
+
+    .station-name.dest { text-align: right; }
+
+    .route-arrow {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .arrow-line {
+      width: 40px;
+      height: 2px;
+      background: linear-gradient(90deg, #d0d8e4, #1a1a2e, #d0d8e4);
+      position: relative;
+    }
+
+    .arrow-line::after {
+      content: '▶';
+      position: absolute;
+      right: -6px;
+      top: -7px;
+      font-size: 10px;
+      color: #1a1a2e;
+    }
+
+    .route-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #666;
+    }
+
+    .route-meta span {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .time-tag {
+      font-size: 13px;
+      font-weight: 600;
+      color: #444;
+    }
+
+    .date-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: #555;
+      margin-top: 6px;
+    }
+
+    .date-row .icon { opacity: 0.5; font-size: 14px; }
+
+    .return-preview {
+      border-top: 1px solid #f0f2f5;
+      padding: 10px 16px;
+      background: #fafbfc;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .return-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .return-info {
+      font-size: 13px;
+      font-weight: 600;
+      color: #444;
+    }
+
+    /* EXPANDED DETAILS */
+    .card-details {
+      display: none;
+      border-top: 1px solid #f0f2f5;
+    }
+
+    .card.expanded .card-details { display: block; }
+
+    .detail-section {
+      padding: 14px 16px;
+    }
+
+    .detail-section + .detail-section {
+      border-top: 1px solid #f0f2f5;
+    }
+
+    .detail-section-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      color: #888;
+      margin-bottom: 12px;
+    }
+
+    .leg {
+      position: relative;
+      padding-left: 24px;
+      margin-bottom: 14px;
+    }
+
+    .leg:last-child { margin-bottom: 0; }
+
+    .leg::before {
+      content: '';
+      position: absolute;
+      left: 8px;
+      top: 22px;
+      bottom: -10px;
+      width: 2px;
+      background: #e0e6ee;
+    }
+
+    .leg:last-child::before { display: none; }
+
+    .leg-dot {
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #1a1a2e;
+      border: 2px solid white;
+      box-shadow: 0 0 0 2px #1a1a2e;
+    }
+
+    .leg-time {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1a1a2e;
+      line-height: 1;
+    }
+
+    .leg-station {
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+      margin: 2px 0;
+    }
+
+    .leg-operator {
+      font-size: 12px;
+      color: #888;
+    }
+
+    .leg-ticket {
+      font-size: 11px;
+      color: #1a6fb5;
+      background: #e8f4fd;
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 4px;
+      margin-top: 3px;
+    }
+
+    .change-marker {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 0 6px 24px;
+      font-size: 12px;
+      color: #f57c00;
+      font-weight: 500;
+    }
+
+    .change-marker::before {
+      content: '⏱';
+    }
+
+    .cost-rows {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .cost-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      font-size: 13px;
+      color: #444;
+    }
+
+    .cost-row .desc { flex: 1; padding-right: 12px; color: #666; }
+    .cost-row .amount { font-weight: 600; white-space: nowrap; }
+
+    .cost-row.total {
+      border-top: 1px solid #e8ecf0;
+      margin-top: 6px;
+      padding-top: 8px;
+      font-size: 14px;
+      font-weight: 700;
+      color: #1a1a2e;
+    }
+
+    .cost-row.fee { font-size: 12px; color: #aaa; }
+
+    .booking-ref {
+      font-size: 12px;
+      color: #aaa;
+      margin-top: 4px;
+    }
+
+    .expand-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      font-size: 12px;
+      color: #888;
+      font-weight: 500;
+      gap: 4px;
+      border-top: 1px solid #f0f2f5;
+    }
+
+    .expand-toggle .chevron {
+      display: inline-block;
+      transition: transform 0.3s;
+    }
+
+    .card.expanded .expand-toggle .chevron {
+      transform: rotate(180deg);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #aaa;
+    }
+
+    .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+    .empty-state h3 { font-size: 16px; color: #888; margin-bottom: 8px; }
+    .empty-state p { font-size: 13px; line-height: 1.6; }
+
+    .last-updated {
+      text-align: center;
+      font-size: 11px;
+      color: #bbb;
+      padding: 16px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      body { background: #0f1117; color: #e8ecf0; }
+      .card { background: #1e2130; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+      .filter-bar { background: #1e2130; border-color: #2a2f45; }
+      .filter-btn { background: #1e2130; border-color: #2a2f45; color: #aaa; }
+      .filter-btn.active { background: #4a7cf7; border-color: #4a7cf7; color: white; }
+      .station-name { color: #e8ecf0; }
+      .return-preview { background: #181c28; border-color: #2a2f45; }
+      .card-details { border-color: #2a2f45; }
+      .detail-section + .detail-section { border-color: #2a2f45; }
+      .expand-toggle { border-color: #2a2f45; }
+      .leg::before { background: #2a2f45; }
+      .leg-dot { background: #4a7cf7; box-shadow: 0 0 0 2px #4a7cf7; }
+      .leg-station { color: #ccc; }
+      .cost-row.total { color: #e8ecf0; }
+      .cost-row.total { border-color: #2a2f45; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🚆 My Train Journeys</h1>
+  <p id="subtitle">Loading journeys...</p>
+</header>
+
+<div class="filter-bar" id="filterBar">
+  <button class="filter-btn active" onclick="setFilter('all')">All</button>
+  <button class="filter-btn" onclick="setFilter('upcoming')">Upcoming</button>
+  <button class="filter-btn" onclick="setFilter('past')">Past</button>
+</div>
+
+<div class="journey-list" id="journeyList">
+  <div class="empty-state">
+    <div class="icon">🚆</div>
+    <h3>Loading journeys...</h3>
+    <p>Fetching your train journey data.</p>
+  </div>
+</div>
+
+<div class="last-updated" id="lastUpdated"></div>
+
+<script>
+  let allJourneys = [];
+  let currentFilter = 'all';
+
+  async function loadJourneys() {
+    try {
+      const res = await fetch('data.json?t=' + Date.now());
+      const data = await res.json();
+      allJourneys = data.journeys || [];
+      document.getElementById('lastUpdated').textContent =
+        data.lastUpdated ? 'Last updated: ' + new Date(data.lastUpdated).toLocaleString('en-GB') : '';
+      renderJourneys();
+    } catch (e) {
+      document.getElementById('journeyList').innerHTML = `
+        <div class="empty-state">
+          <div class="icon">📭</div>
+          <h3>No journeys yet</h3>
+          <p>Your Trainline booking confirmations will appear here automatically once the hourly sync runs.</p>
+        </div>`;
+    }
+  }
+
+  function setFilter(f) {
+    currentFilter = f;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+    renderJourneys();
+  }
+
+  function renderJourneys() {
+    const now = new Date();
+    const list = document.getElementById('journeyList');
+
+    let journeys = [...allJourneys].sort((a, b) => {
+      const da = new Date(a.outbound?.isoDate || a.single?.isoDate);
+      const db = new Date(b.outbound?.isoDate || b.single?.isoDate);
+      return db - da;
+    });
+
+    if (currentFilter === 'upcoming') {
+      journeys = journeys.filter(j => {
+        const d = new Date(j.outbound?.isoDate || j.single?.isoDate);
+        return d >= now;
+      }).reverse();
+    } else if (currentFilter === 'past') {
+      journeys = journeys.filter(j => {
+        const d = new Date(j.outbound?.isoDate || j.single?.isoDate);
+        return d < now;
+      });
+    }
+
+    if (journeys.length === 0) {
+      list.innerHTML = `<div class="empty-state"><div class="icon">🔍</div><h3>No journeys here</h3><p>Try a different filter.</p></div>`;
+      document.getElementById('subtitle').textContent = '0 journeys';
+      return;
+    }
+
+    document.getElementById('subtitle').textContent = `${allJourneys.length} journey${allJourneys.length !== 1 ? 's' : ''} tracked`;
+
+    let html = '';
+    let lastSection = null;
+
+    journeys.forEach(j => {
+      const mainLeg = j.outbound || j.single;
+      const d = new Date(mainLeg.isoDate);
+      const isUpcoming = d >= now;
+      const section = isUpcoming ? 'upcoming' : d.getFullYear().toString();
+
+      if (currentFilter === 'all' && section !== lastSection) {
+        html += `<div class="section-label">${isUpcoming ? '🗓 Upcoming' : section}</div>`;
+        lastSection = section;
+      }
+
+      html += buildCard(j);
+    });
+
+    list.innerHTML = html;
+  }
+
+  function buildCard(j) {
+    const isReturn = j.type === 'return';
+    const mainLeg = j.outbound || j.single;
+    const returnLeg = j.return;
+
+    const badge = isReturn
+      ? `<span class="journey-type-badge return">↩ Return</span>`
+      : `<span class="journey-type-badge">→ Single</span>`;
+
+    const costStr = j.cost?.total ? `£${j.cost.total.toFixed(2)}` : '';
+
+    const changes = mainLeg.changes === 0 ? 'Direct' :
+      mainLeg.changes === 1 ? '1 change' : `${mainLeg.changes} changes`;
+
+    const returnPreview = isReturn && returnLeg ? `
+      <div class="return-preview">
+        <div>
+          <div class="return-label">Return</div>
+          <div class="return-info">${returnLeg.dateDisplay} · ${returnLeg.departure}</div>
+        </div>
+        <div class="time-tag">${returnLeg.from} → ${returnLeg.to.split(' ')[0]}</div>
+      </div>` : '';
+
+    const detailsHtml = buildDetails(j);
+
+    return `
+      <div class="card" id="card-${j.id}" onclick="toggleCard('${j.id}')">
+        <div class="card-header">
+          <div class="card-top">
+            ${badge}
+            <span class="cost-badge">${costStr}</span>
+          </div>
+          <div class="route-row">
+            <span class="station-name">${mainLeg.from}</span>
+            <div class="route-arrow"><div class="arrow-line"></div></div>
+            <span class="station-name dest">${mainLeg.to}</span>
+          </div>
+          <div class="route-meta">
+            <span class="time-tag">${mainLeg.departure} → ${mainLeg.arrival}</span>
+            <span>${mainLeg.duration} · ${changes}</span>
+          </div>
+          <div class="date-row">
+            <span class="icon">📅</span>
+            <span>${mainLeg.dateDisplay}</span>
+          </div>
+        </div>
+        ${returnPreview}
+        <div class="expand-toggle">
+          <span>Full journey details</span>
+          <span class="chevron">▾</span>
+        </div>
+        <div class="card-details">
+          ${detailsHtml}
+        </div>
+      </div>`;
+  }
+
+  function buildDetails(j) {
+    let html = '';
+
+    const legLabel = j.type === 'return' ? 'Outbound' : 'Journey';
+    const mainLeg = j.outbound || j.single;
+    html += buildLegSection(legLabel, mainLeg);
+
+    if (j.type === 'return' && j.return) {
+      html += buildLegSection('Return', j.return);
+    }
+
+    if (j.cost) {
+      html += `<div class="detail-section">
+        <div class="detail-section-title">💳 Payment</div>
+        <div class="cost-rows">`;
+
+      (j.cost.items || []).forEach(item => {
+        html += `<div class="cost-row">
+          <span class="desc">${item.description}</span>
+          <span class="amount">£${item.price.toFixed(2)}</span>
+        </div>`;
+      });
+
+      if (j.cost.bookingFee) {
+        html += `<div class="cost-row fee">
+          <span class="desc">Booking fee</span>
+          <span class="amount">£${j.cost.bookingFee.toFixed(2)}</span>
+        </div>`;
+      }
+
+      html += `<div class="cost-row total">
+          <span class="desc">Total</span>
+          <span class="amount">£${j.cost.total.toFixed(2)}</span>
+        </div>`;
+
+      html += `</div>`;
+
+      if (j.bookingRef) {
+        html += `<div class="booking-ref">Transaction ID: ${j.bookingRef}</div>`;
+      }
+
+      html += `</div>`;
+    }
+
+    return html;
+  }
+
+  function buildLegSection(label, leg) {
+    if (!leg || !leg.legs) return '';
+
+    let html = `<div class="detail-section">
+      <div class="detail-section-title">${label === 'Return' ? '↩' : '→'} ${label} · ${leg.dateDisplay}</div>`;
+
+    leg.legs.forEach((l, i) => {
+      html += `<div class="leg">
+        <div class="leg-dot"></div>
+        <div class="leg-time">${l.departure}</div>
+        <div class="leg-station">${l.from}</div>
+        <div class="leg-operator">${l.operator}</div>
+        ${l.ticketType ? `<div class="leg-ticket">${l.ticketType}</div>` : ''}
+      </div>`;
+
+      if (l.changeMinutes) {
+        html += `<div class="change-marker">${l.changeMinutes} min connection at ${l.changeat || leg.legs[i+1]?.from || ''}</div>`;
+      }
+    });
+
+    const lastLeg = leg.legs[leg.legs.length - 1];
+    html += `<div class="leg">
+      <div class="leg-dot"></div>
+      <div class="leg-time">${leg.arrival}</div>
+      <div class="leg-station">${leg.to}</div>
+    </div>`;
+
+    html += `</div>`;
+    return html;
+  }
+
+  function toggleCard(id) {
+    const card = document.getElementById('card-' + id);
+    card.classList.toggle('expanded');
+  }
+
+  loadJourneys();
+</script>
+</body>
+</html>
