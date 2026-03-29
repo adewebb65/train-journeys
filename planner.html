@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Week Planner</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Week Planner">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#1a1a2e">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f0f2f5;
+      color: #1a1a2e;
+      min-height: 100vh;
+    }
+
+    header {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      color: white;
+      padding: 20px 16px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+    }
+
+    header h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; }
+    header p { font-size: 12px; opacity: 0.6; margin-top: 2px; }
+
+    .planner {
+      padding: 16px;
+      max-width: 600px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* DAY BLOCK */
+    .day-block {}
+
+    .day-heading {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .day-label {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      color: #888;
+    }
+
+    .day-label.today { color: #1a6fb5; }
+
+    .day-date {
+      font-size: 12px;
+      color: #aaa;
+    }
+
+    .day-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .day-empty {
+      background: white;
+      border-radius: 12px;
+      border: 1.5px dashed #dde2ea;
+      padding: 14px 16px;
+      font-size: 13px;
+      color: #bbb;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .day-empty:hover { border-color: #1a6fb5; color: #1a6fb5; }
+
+    /* EVENT CARD */
+    .card {
+      background: white;
+      border-radius: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    .card:active { transform: scale(0.98); }
+    .card.expanded { box-shadow: 0 4px 20px rgba(0,0,0,0.12); }
+
+    .card-summary {
+      padding: 14px 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .event-icon {
+      font-size: 22px;
+      line-height: 1;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .event-main { flex: 1; min-width: 0; }
+
+    .event-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1a1a2e;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .event-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .meta-chip {
+      font-size: 12px;
+      color: #666;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .meta-chip .dot {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .action-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      padding: 4px;
+      border-radius: 6px;
+      opacity: 0.4;
+      transition: opacity 0.2s, background 0.2s;
+      line-height: 1;
+    }
+
+    .action-btn:hover { opacity: 1; background: #f0f2f5; }
+
+    .chevron {
+      font-size: 12px;
+      color: #bbb;
+      display: inline-block;
+      transition: transform 0.25s;
+    }
+
+    .card.expanded .chevron { transform: rotate(180deg); }
+
+    /* DETAILS PANEL */
+    .card-details {
+      display: none;
+      border-top: 1px solid #f0f2f5;
+      padding: 14px 16px;
+    }
+
+    .card.expanded .card-details { display: block; }
+
+    .detail-field { margin-bottom: 10px; }
+    .detail-field:last-child { margin-bottom: 0; }
+
+    .detail-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: #aaa;
+      margin-bottom: 3px;
+    }
+
+    .detail-value {
+      font-size: 13px;
+      color: #444;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+
+    /* ADD BUTTON */
+    .add-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: none;
+      border: none;
+      font-size: 12px;
+      color: #1a6fb5;
+      cursor: pointer;
+      padding: 2px 0;
+      font-weight: 600;
+      opacity: 0.8;
+      transition: opacity 0.2s;
+    }
+
+    .add-btn:hover { opacity: 1; }
+    .add-btn .plus { font-size: 16px; line-height: 1; }
+
+    /* MODAL */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 200;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding-bottom: env(safe-area-inset-bottom, 0);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal {
+      background: white;
+      border-radius: 20px 20px 0 0;
+      width: 100%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 20px 20px calc(20px + env(safe-area-inset-bottom, 0));
+      transform: translateY(40px);
+      transition: transform 0.25s;
+    }
+
+    .modal-overlay.open .modal { transform: translateY(0); }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .modal-title { font-size: 17px; font-weight: 700; color: #1a1a2e; }
+
+    .modal-close {
+      background: #f0f2f5;
+      border: none;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #666;
+    }
+
+    .form-group { margin-bottom: 14px; }
+
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+
+    .form-input, .form-textarea, .form-select {
+      width: 100%;
+      border: 1.5px solid #dde2ea;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 15px;
+      font-family: inherit;
+      color: #1a1a2e;
+      background: white;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-input:focus, .form-textarea:focus, .form-select:focus {
+      border-color: #1a6fb5;
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .icon-picker {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .icon-option {
+      font-size: 22px;
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      border: 2px solid #dde2ea;
+      background: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .icon-option.selected {
+      border-color: #1a6fb5;
+      background: #e8f4fd;
+    }
+
+    .color-picker {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .color-swatch {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: transform 0.15s, border-color 0.15s;
+    }
+
+    .color-swatch.selected {
+      border-color: #1a1a2e;
+      transform: scale(1.15);
+    }
+
+    .row-2 { display: flex; gap: 12px; }
+    .row-2 .form-group { flex: 1; }
+
+    .form-submit {
+      width: 100%;
+      padding: 14px;
+      background: #1a1a2e;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 6px;
+      transition: background 0.2s;
+    }
+
+    .form-submit:hover { background: #2a3050; }
+
+    /* COLOUR DOTS ON CARDS */
+    .cat-dot-blue   { background: #1a6fb5; }
+    .cat-dot-green  { background: #2e7d32; }
+    .cat-dot-orange { background: #e65100; }
+    .cat-dot-purple { background: #6a1b9a; }
+    .cat-dot-red    { background: #c62828; }
+    .cat-dot-teal   { background: #00695c; }
+    .cat-dot-pink   { background: #ad1457; }
+    .cat-dot-grey   { background: #546e7a; }
+
+    @media (prefers-color-scheme: dark) {
+      body { background: #0f1117; color: #e8ecf0; }
+      .card { background: #1e2130; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+      .card.expanded { box-shadow: 0 4px 20px rgba(0,0,0,0.25); }
+      .day-empty { background: #1e2130; border-color: #2a2f45; color: #555; }
+      .day-empty:hover { border-color: #4a7cf7; color: #4a7cf7; }
+      .event-title { color: #e8ecf0; }
+      .card-details { border-color: #2a2f45; }
+      .detail-value { color: #bbb; }
+      .modal { background: #1e2130; }
+      .modal-title { color: #e8ecf0; }
+      .modal-close { background: #2a2f45; color: #aaa; }
+      .form-input, .form-textarea, .form-select {
+        background: #181c28;
+        border-color: #2a2f45;
+        color: #e8ecf0;
+      }
+      .icon-option { background: #181c28; border-color: #2a2f45; }
+      .icon-option.selected { background: #1a3050; border-color: #4a7cf7; }
+      .color-swatch.selected { border-color: #e8ecf0; }
+      .add-btn { color: #4a7cf7; }
+      .form-submit { background: #4a7cf7; }
+      .form-submit:hover { background: #3a6de7; }
+      .action-btn:hover { background: #2a2f45; }
+      .meta-chip { color: #999; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>📅 Week Planner</h1>
+  <p id="subtitle">Rolling 7-day view</p>
+</header>
+
+<div class="planner" id="planner"></div>
+
+<!-- ADD / EDIT MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="handleOverlayClick(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="modalTitle">Add event</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+
+    <form id="eventForm" onsubmit="saveEvent(event)">
+      <input type="hidden" id="editId">
+      <input type="hidden" id="editDate">
+
+      <div class="form-group">
+        <label class="form-label">Title</label>
+        <input class="form-input" id="fTitle" type="text" placeholder="e.g. Dentist appointment" required>
+      </div>
+
+      <div class="row-2">
+        <div class="form-group">
+          <label class="form-label">Time</label>
+          <input class="form-input" id="fTime" type="text" placeholder="e.g. 10:30">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Duration</label>
+          <input class="form-input" id="fDuration" type="text" placeholder="e.g. 1 hr">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Location / link</label>
+        <input class="form-input" id="fLocation" type="text" placeholder="e.g. Kenilworth or Zoom link">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Notes</label>
+        <textarea class="form-textarea" id="fNotes" placeholder="Any extra details…"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Icon</label>
+        <div class="icon-picker" id="iconPicker"></div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Colour</label>
+        <div class="color-picker" id="colorPicker"></div>
+      </div>
+
+      <button type="submit" class="form-submit" id="formSubmit">Save event</button>
+    </form>
+  </div>
+</div>
+
+<script>
+  // ── CONFIG ──────────────────────────────────────────────────────────────────
+  const ICONS = ['📅','🏃','🍽️','🚆','✈️','🏥','💼','🎉','🎬','📞','🛒','🏋️','🎵','🤝','📚','🏖️','🩺','🚗','🏡','💊'];
+  const COLORS = [
+    { key: 'blue',   hex: '#1a6fb5' },
+    { key: 'green',  hex: '#2e7d32' },
+    { key: 'orange', hex: '#e65100' },
+    { key: 'purple', hex: '#6a1b9a' },
+    { key: 'red',    hex: '#c62828' },
+    { key: 'teal',   hex: '#00695c' },
+    { key: 'pink',   hex: '#ad1457' },
+    { key: 'grey',   hex: '#546e7a' },
+  ];
+  const STORAGE_KEY = 'weekPlanner_v1';
+
+  // ── STATE ───────────────────────────────────────────────────────────────────
+  let events = loadEvents();
+  let selectedIcon = ICONS[0];
+  let selectedColor = COLORS[0].key;
+
+  // ── HELPERS ─────────────────────────────────────────────────────────────────
+  function isoDate(d) {
+    return d.toISOString().slice(0, 10);
+  }
+
+  function getWeekDates() {
+    const days = [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(today);
+      d.setDate(today.getDate() + i);
+      days.push(d);
+    }
+    return days;
+  }
+
+  function formatDayLabel(d, isToday) {
+    if (isToday) return 'Today';
+    if (isToday === false && d - new Date().setHours(0,0,0,0) === 86400000) return 'Tomorrow';
+    return d.toLocaleDateString('en-GB', { weekday: 'long' });
+  }
+
+  function formatDayDate(d) {
+    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  }
+
+  function uid() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  }
+
+  function loadEvents() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+    } catch { return {}; }
+  }
+
+  function saveEvents() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(events));
+  }
+
+  // ── RENDER ───────────────────────────────────────────────────────────────────
+  function render() {
+    const planner = document.getElementById('planner');
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const days = getWeekDates();
+    let html = '';
+
+    days.forEach(d => {
+      const iso = isoDate(d);
+      const isToday = d.getTime() === today.getTime();
+      const dayEvents = (events[iso] || []).sort((a, b) => {
+        if (!a.time && !b.time) return 0;
+        if (!a.time) return 1;
+        if (!b.time) return -1;
+        return a.time.localeCompare(b.time);
+      });
+
+      html += `<div class="day-block">
+        <div class="day-heading">
+          <span class="day-label${isToday ? ' today' : ''}">${formatDayLabel(d, isToday)}</span>
+          <span class="day-date">${formatDayDate(d)}</span>
+        </div>
+        <div class="day-cards" id="day-${iso}">`;
+
+      if (dayEvents.length === 0) {
+        html += `<div class="day-empty" onclick="openModal('${iso}')">+ Add event</div>`;
+      } else {
+        dayEvents.forEach(ev => {
+          html += buildEventCard(ev, iso);
+        });
+        html += `<button class="add-btn" onclick="openModal('${iso}')">
+          <span class="plus">+</span> Add another
+        </button>`;
+      }
+
+      html += `</div></div>`;
+    });
+
+    planner.innerHTML = html;
+
+    // Restore expanded state
+    document.querySelectorAll('.card').forEach(card => {
+      if (expandedCards.has(card.id)) card.classList.add('expanded');
+    });
+  }
+
+  function buildEventCard(ev, iso) {
+    const colorHex = (COLORS.find(c => c.key === ev.color) || COLORS[0]).hex;
+    const metaChips = [];
+    if (ev.time) metaChips.push(`<span class="meta-chip">🕐 ${ev.time}${ev.duration ? ' · ' + ev.duration : ''}</span>`);
+    if (ev.location) metaChips.push(`<span class="meta-chip">📍 ${esc(ev.location)}</span>`);
+
+    const detailFields = [];
+    if (ev.time || ev.duration) {
+      const t = [ev.time, ev.duration].filter(Boolean).join(' · ');
+      detailFields.push(`<div class="detail-field"><div class="detail-label">Time</div><div class="detail-value">${esc(t)}</div></div>`);
+    }
+    if (ev.location) detailFields.push(`<div class="detail-field"><div class="detail-label">Location / link</div><div class="detail-value">${esc(ev.location)}</div></div>`);
+    if (ev.notes) detailFields.push(`<div class="detail-field"><div class="detail-label">Notes</div><div class="detail-value">${esc(ev.notes)}</div></div>`);
+
+    return `
+      <div class="card" id="card-${ev.id}" onclick="toggleCard('${ev.id}')">
+        <div class="card-summary">
+          <div class="event-icon">${ev.icon || '📅'}</div>
+          <div class="event-main">
+            <div class="event-title">${esc(ev.title)}</div>
+            <div class="event-meta">
+              <span class="meta-chip"><span class="dot cat-dot-${ev.color || 'blue'}"></span></span>
+              ${metaChips.join('')}
+            </div>
+          </div>
+          <div class="card-actions" onclick="event.stopPropagation()">
+            <button class="action-btn" title="Edit" onclick="editEvent('${iso}','${ev.id}')">✏️</button>
+            <button class="action-btn" title="Delete" onclick="deleteEvent('${iso}','${ev.id}')">🗑️</button>
+            <span class="chevron">▾</span>
+          </div>
+        </div>
+        ${detailFields.length ? `<div class="card-details">${detailFields.join('')}</div>` : ''}
+      </div>`;
+  }
+
+  function esc(str) {
+    if (!str) return '';
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── EXPAND / COLLAPSE ────────────────────────────────────────────────────────
+  const expandedCards = new Set();
+
+  function toggleCard(id) {
+    const card = document.getElementById('card-' + id);
+    if (!card) return;
+    const hasDetails = card.querySelector('.card-details');
+    if (!hasDetails) return;
+    card.classList.toggle('expanded');
+    if (card.classList.contains('expanded')) {
+      expandedCards.add('card-' + id);
+    } else {
+      expandedCards.delete('card-' + id);
+    }
+  }
+
+  // ── MODAL ─────────────────────────────────────────────────────────────────────
+  function buildIconPicker() {
+    const el = document.getElementById('iconPicker');
+    el.innerHTML = ICONS.map(ic =>
+      `<button type="button" class="icon-option${ic === selectedIcon ? ' selected' : ''}"
+        onclick="selectIcon('${ic}')">${ic}</button>`
+    ).join('');
+  }
+
+  function buildColorPicker() {
+    const el = document.getElementById('colorPicker');
+    el.innerHTML = COLORS.map(c =>
+      `<div class="color-swatch${c.key === selectedColor ? ' selected' : ''}"
+        style="background:${c.hex}"
+        onclick="selectColor('${c.key}')"></div>`
+    ).join('');
+  }
+
+  function selectIcon(ic) {
+    selectedIcon = ic;
+    buildIconPicker();
+  }
+
+  function selectColor(c) {
+    selectedColor = c;
+    buildColorPicker();
+  }
+
+  function openModal(iso, ev) {
+    selectedIcon = ev ? ev.icon : ICONS[0];
+    selectedColor = ev ? ev.color : COLORS[0].key;
+
+    document.getElementById('editId').value = ev ? ev.id : '';
+    document.getElementById('editDate').value = iso;
+    document.getElementById('fTitle').value = ev ? ev.title : '';
+    document.getElementById('fTime').value = ev ? (ev.time || '') : '';
+    document.getElementById('fDuration').value = ev ? (ev.duration || '') : '';
+    document.getElementById('fLocation').value = ev ? (ev.location || '') : '';
+    document.getElementById('fNotes').value = ev ? (ev.notes || '') : '';
+    document.getElementById('modalTitle').textContent = ev ? 'Edit event' : 'Add event';
+    document.getElementById('formSubmit').textContent = ev ? 'Save changes' : 'Save event';
+
+    buildIconPicker();
+    buildColorPicker();
+
+    document.getElementById('modalOverlay').classList.add('open');
+    setTimeout(() => document.getElementById('fTitle').focus(), 300);
+  }
+
+  function closeModal() {
+    document.getElementById('modalOverlay').classList.remove('open');
+  }
+
+  function handleOverlayClick(e) {
+    if (e.target === document.getElementById('modalOverlay')) closeModal();
+  }
+
+  function editEvent(iso, id) {
+    const ev = (events[iso] || []).find(e => e.id === id);
+    if (ev) openModal(iso, ev);
+  }
+
+  function deleteEvent(iso, id) {
+    if (!confirm('Delete this event?')) return;
+    events[iso] = (events[iso] || []).filter(e => e.id !== id);
+    if (events[iso].length === 0) delete events[iso];
+    saveEvents();
+    render();
+  }
+
+  function saveEvent(e) {
+    e.preventDefault();
+    const iso = document.getElementById('editDate').value;
+    const existingId = document.getElementById('editId').value;
+
+    const ev = {
+      id: existingId || uid(),
+      title: document.getElementById('fTitle').value.trim(),
+      time: document.getElementById('fTime').value.trim(),
+      duration: document.getElementById('fDuration').value.trim(),
+      location: document.getElementById('fLocation').value.trim(),
+      notes: document.getElementById('fNotes').value.trim(),
+      icon: selectedIcon,
+      color: selectedColor,
+    };
+
+    if (!events[iso]) events[iso] = [];
+    if (existingId) {
+      const idx = events[iso].findIndex(x => x.id === existingId);
+      if (idx !== -1) events[iso][idx] = ev;
+      else events[iso].push(ev);
+    } else {
+      events[iso].push(ev);
+    }
+
+    saveEvents();
+    closeModal();
+    render();
+  }
+
+  // ── PRUNE OLD DATES (keep only 7 days ahead + today) ────────────────────────
+  function pruneOldEvents() {
+    const cutoff = new Date();
+    cutoff.setHours(0, 0, 0, 0);
+    // Keep everything from today onward; don't auto-delete past events
+    // (user may want to review them). Prune only events older than 30 days.
+    const limit = new Date(cutoff);
+    limit.setDate(limit.getDate() - 30);
+    Object.keys(events).forEach(iso => {
+      if (new Date(iso) < limit) delete events[iso];
+    });
+    saveEvents();
+  }
+
+  // ── INIT ────────────────────────────────────────────────────────────────────
+  pruneOldEvents();
+  render();
+</script>
+</body>
+</html>
