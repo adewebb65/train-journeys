@@ -5,14 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Train Journeys</title>
 
-  <!-- PWA: tells iOS this is a standalone app, not a browser shortcut -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Train Journeys">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#1a1a2e">
 
-  <!-- Web App Manifest (inline) — gives iOS a unique identity for this app -->
   <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Train+Journeys%22%2C%22short_name%22%3A%22Trains%22%2C%22id%22%3A%22train-journeys-ade-2026%22%2C%22start_url%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%231a1a2e%22%2C%22theme_color%22%3A%22%231a1a2e%22%7D">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -34,6 +32,12 @@
       box-shadow: 0 2px 12px rgba(0,0,0,0.3);
     }
 
+    .header-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+    }
+
     header h1 {
       font-size: 20px;
       font-weight: 700;
@@ -44,6 +48,65 @@
       font-size: 12px;
       opacity: 0.6;
       margin-top: 2px;
+    }
+
+    .refresh-btn {
+      background: none;
+      border: 1.5px solid rgba(255,255,255,0.3);
+      color: white;
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      opacity: 0.8;
+      transition: opacity 0.2s;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .refresh-btn:active { opacity: 0.5; }
+
+    .refresh-btn .spin {
+      display: inline-block;
+      transition: transform 0.6s;
+    }
+
+    .refresh-btn.spinning .spin {
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .sync-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 16px;
+      font-size: 11px;
+      background: #16213e;
+      color: rgba(255,255,255,0.5);
+      border-top: 1px solid rgba(255,255,255,0.07);
+    }
+
+    .sync-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #4caf50;
+      flex-shrink: 0;
+    }
+
+    .sync-dot.stale { background: #f57c00; }
+    .sync-dot.checking { background: #4a7cf7; animation: pulse 1s ease-in-out infinite; }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
     }
 
     .filter-bar {
@@ -103,14 +166,18 @@
     }
 
     .card:active { transform: scale(0.98); }
+    .card.expanded { box-shadow: 0 4px 20px rgba(0,0,0,0.12); }
 
-    .card.expanded {
-      box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    .card.new-journey {
+      animation: slideIn 0.4s ease-out;
     }
 
-    .card-header {
-      padding: 16px;
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
+
+    .card-header { padding: 16px; }
 
     .card-top {
       display: flex;
@@ -233,7 +300,6 @@
       color: #444;
     }
 
-    /* EXPANDED DETAILS */
     .card-details {
       display: none;
       border-top: 1px solid #f0f2f5;
@@ -241,13 +307,8 @@
 
     .card.expanded .card-details { display: block; }
 
-    .detail-section {
-      padding: 14px 16px;
-    }
-
-    .detail-section + .detail-section {
-      border-top: 1px solid #f0f2f5;
-    }
+    .detail-section { padding: 14px 16px; }
+    .detail-section + .detail-section { border-top: 1px solid #f0f2f5; }
 
     .detail-section-title {
       font-size: 11px;
@@ -290,24 +351,9 @@
       box-shadow: 0 0 0 2px #1a1a2e;
     }
 
-    .leg-time {
-      font-size: 15px;
-      font-weight: 700;
-      color: #1a1a2e;
-      line-height: 1;
-    }
-
-    .leg-station {
-      font-size: 14px;
-      font-weight: 600;
-      color: #333;
-      margin: 2px 0;
-    }
-
-    .leg-operator {
-      font-size: 12px;
-      color: #888;
-    }
+    .leg-time { font-size: 15px; font-weight: 700; color: #1a1a2e; line-height: 1; }
+    .leg-station { font-size: 14px; font-weight: 600; color: #333; margin: 2px 0; }
+    .leg-operator { font-size: 12px; color: #888; }
 
     .leg-ticket {
       font-size: 11px;
@@ -329,15 +375,9 @@
       font-weight: 500;
     }
 
-    .change-marker::before {
-      content: '⏱';
-    }
+    .change-marker::before { content: '⏱'; }
 
-    .cost-rows {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
+    .cost-rows { display: flex; flex-direction: column; gap: 6px; }
 
     .cost-row {
       display: flex;
@@ -361,11 +401,7 @@
 
     .cost-row.fee { font-size: 12px; color: #aaa; }
 
-    .booking-ref {
-      font-size: 12px;
-      color: #aaa;
-      margin-top: 4px;
-    }
+    .booking-ref { font-size: 12px; color: #aaa; margin-top: 4px; }
 
     .expand-toggle {
       display: flex;
@@ -384,9 +420,7 @@
       transition: transform 0.3s;
     }
 
-    .card.expanded .expand-toggle .chevron {
-      transform: rotate(180deg);
-    }
+    .card.expanded .expand-toggle .chevron { transform: rotate(180deg); }
 
     .empty-state {
       text-align: center;
@@ -412,29 +446,43 @@
       .filter-btn { background: #1e2130; border-color: #2a2f45; color: #aaa; }
       .filter-btn.active { background: #4a7cf7; border-color: #4a7cf7; color: white; }
       .station-name { color: #e8ecf0; }
+      .cost-badge { color: #e8ecf0; }
       .return-preview { background: #181c28; border-color: #2a2f45; }
       .card-details { border-color: #2a2f45; }
       .detail-section + .detail-section { border-color: #2a2f45; }
-      .expand-toggle { border-color: #2a2f45; }
+      .expand-toggle { border-color: #2a2f45; color: #666; }
       .leg::before { background: #2a2f45; }
       .leg-dot { background: #4a7cf7; box-shadow: 0 0 0 2px #4a7cf7; }
+      .leg-time { color: #e8ecf0; }
       .leg-station { color: #ccc; }
-      .cost-row.total { color: #e8ecf0; }
-      .cost-row.total { border-color: #2a2f45; }
+      .cost-row.total { color: #e8ecf0; border-color: #2a2f45; }
+      .sync-bar { background: #0f1117; }
     }
   </style>
 </head>
 <body>
 
 <header>
-  <h1>🚆 My Train Journeys</h1>
-  <p id="subtitle">Loading journeys...</p>
+  <div class="header-row">
+    <div>
+      <h1>🚆 My Train Journeys</h1>
+      <p id="subtitle">Loading journeys...</p>
+    </div>
+    <button class="refresh-btn" id="refreshBtn" onclick="manualRefresh()">
+      <span class="spin">↻</span> Refresh
+    </button>
+  </div>
 </header>
 
+<div class="sync-bar">
+  <div class="sync-dot" id="syncDot"></div>
+  <span id="syncStatus">Checking...</span>
+</div>
+
 <div class="filter-bar" id="filterBar">
-  <button class="filter-btn active" onclick="setFilter('all')">All</button>
-  <button class="filter-btn" onclick="setFilter('upcoming')">Upcoming</button>
-  <button class="filter-btn" onclick="setFilter('past')">Past</button>
+  <button class="filter-btn active" onclick="setFilter('all', this)">All</button>
+  <button class="filter-btn" onclick="setFilter('upcoming', this)">Upcoming</button>
+  <button class="filter-btn" onclick="setFilter('past', this)">Past</button>
 </div>
 
 <div class="journey-list" id="journeyList">
@@ -450,33 +498,86 @@
 <script>
   let allJourneys = [];
   let currentFilter = 'all';
+  let lastUpdatedTimestamp = null;
+  let knownIds = new Set();
+  const POLL_INTERVAL = 5 * 60 * 1000; // 5 minutes
 
-  async function loadJourneys() {
+  function setSyncStatus(state, text) {
+    const dot = document.getElementById('syncDot');
+    const status = document.getElementById('syncStatus');
+    dot.className = 'sync-dot' + (state !== 'ok' ? ' ' + state : '');
+    status.textContent = text;
+  }
+
+  async function loadJourneys(isManual = false) {
+    const btn = document.getElementById('refreshBtn');
+    if (isManual) {
+      btn.classList.add('spinning');
+    }
+    setSyncStatus('checking', 'Checking for new journeys...');
+
     try {
       const res = await fetch('data.json?t=' + Date.now());
+      if (!res.ok) throw new Error('HTTP ' + res.status);
       const data = await res.json();
-      allJourneys = data.journeys || [];
-      document.getElementById('lastUpdated').textContent =
-        data.lastUpdated ? 'Last updated: ' + new Date(data.lastUpdated).toLocaleString('en-GB') : '';
-      renderJourneys();
+
+      const newTimestamp = data.lastUpdated || null;
+      const incoming = data.journeys || [];
+
+      // Detect newly added journeys since last load
+      const newIds = incoming.map(j => j.id).filter(id => !knownIds.has(id));
+
+      allJourneys = incoming;
+      incoming.forEach(j => knownIds.add(j.id));
+
+      if (newTimestamp) {
+        const updated = new Date(newTimestamp);
+        const now = new Date();
+        const ageMs = now - updated;
+        const ageMin = Math.round(ageMs / 60000);
+        const ageStr = ageMin < 2 ? 'just now'
+          : ageMin < 60 ? `${ageMin} min ago`
+          : `${Math.round(ageMin / 60)}h ago`;
+
+        document.getElementById('lastUpdated').textContent = 'Last synced: ' + updated.toLocaleString('en-GB');
+
+        const isStale = ageMs > 90 * 60 * 1000; // stale after 90 min
+        setSyncStatus(isStale ? 'stale' : 'ok',
+          isStale ? `Sync overdue · last ran ${ageStr}` : `Up to date · synced ${ageStr}`);
+      } else {
+        setSyncStatus('stale', 'Never synced');
+        document.getElementById('lastUpdated').textContent = '';
+      }
+
+      renderJourneys(newIds);
+
     } catch (e) {
-      document.getElementById('journeyList').innerHTML = `
-        <div class="empty-state">
-          <div class="icon">📭</div>
-          <h3>No journeys yet</h3>
-          <p>Your Trainline booking confirmations will appear here automatically once the hourly sync runs.</p>
-        </div>`;
+      setSyncStatus('stale', 'Could not reach data.json');
+      if (allJourneys.length === 0) {
+        document.getElementById('journeyList').innerHTML = `
+          <div class="empty-state">
+            <div class="icon">📭</div>
+            <h3>No journeys yet</h3>
+            <p>Your Trainline booking confirmations will appear here automatically once the hourly sync runs.</p>
+          </div>`;
+      }
+    } finally {
+      btn.classList.remove('spinning');
     }
   }
 
-  function setFilter(f) {
+  function manualRefresh() {
+    loadJourneys(true);
+  }
+
+  function setFilter(f, el) {
     currentFilter = f;
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    event.target.classList.add('active');
+    el.classList.add('active');
     renderJourneys();
   }
 
-  function renderJourneys() {
+  function renderJourneys(highlightIds = []) {
     const now = new Date();
     const list = document.getElementById('journeyList');
 
@@ -498,13 +599,13 @@
       });
     }
 
+    document.getElementById('subtitle').textContent =
+      `${allJourneys.length} journey${allJourneys.length !== 1 ? 's' : ''} tracked`;
+
     if (journeys.length === 0) {
       list.innerHTML = `<div class="empty-state"><div class="icon">🔍</div><h3>No journeys here</h3><p>Try a different filter.</p></div>`;
-      document.getElementById('subtitle').textContent = '0 journeys';
       return;
     }
-
-    document.getElementById('subtitle').textContent = `${allJourneys.length} journey${allJourneys.length !== 1 ? 's' : ''} tracked`;
 
     let html = '';
     let lastSection = null;
@@ -520,13 +621,13 @@
         lastSection = section;
       }
 
-      html += buildCard(j);
+      html += buildCard(j, highlightIds.includes(j.id));
     });
 
     list.innerHTML = html;
   }
 
-  function buildCard(j) {
+  function buildCard(j, isNew = false) {
     const isReturn = j.type === 'return';
     const mainLeg = j.outbound || j.single;
     const returnLeg = j.return;
@@ -536,9 +637,8 @@
       : `<span class="journey-type-badge">→ Single</span>`;
 
     const costStr = j.cost?.total ? `£${j.cost.total.toFixed(2)}` : '';
-
-    const changes = mainLeg.changes === 0 ? 'Direct' :
-      mainLeg.changes === 1 ? '1 change' : `${mainLeg.changes} changes`;
+    const changes = mainLeg.changes === 0 ? 'Direct'
+      : mainLeg.changes === 1 ? '1 change' : `${mainLeg.changes} changes`;
 
     const returnPreview = isReturn && returnLeg ? `
       <div class="return-preview">
@@ -549,10 +649,10 @@
         <div class="time-tag">${returnLeg.from} → ${returnLeg.to.split(' ')[0]}</div>
       </div>` : '';
 
-    const detailsHtml = buildDetails(j);
+    const newClass = isNew ? ' new-journey' : '';
 
     return `
-      <div class="card" id="card-${j.id}" onclick="toggleCard('${j.id}')">
+      <div class="card${newClass}" id="card-${j.id}" onclick="toggleCard('${j.id}')">
         <div class="card-header">
           <div class="card-top">
             ${badge}
@@ -578,18 +678,15 @@
           <span class="chevron">▾</span>
         </div>
         <div class="card-details">
-          ${detailsHtml}
+          ${buildDetails(j)}
         </div>
       </div>`;
   }
 
   function buildDetails(j) {
     let html = '';
-
-    const legLabel = j.type === 'return' ? 'Outbound' : 'Journey';
     const mainLeg = j.outbound || j.single;
-    html += buildLegSection(legLabel, mainLeg);
-
+    html += buildLegSection(j.type === 'return' ? 'Outbound' : 'Journey', mainLeg);
     if (j.type === 'return' && j.return) {
       html += buildLegSection('Return', j.return);
     }
@@ -616,12 +713,10 @@
       html += `<div class="cost-row total">
           <span class="desc">Total</span>
           <span class="amount">£${j.cost.total.toFixed(2)}</span>
-        </div>`;
-
-      html += `</div>`;
+        </div></div>`;
 
       if (j.bookingRef) {
-        html += `<div class="booking-ref">Transaction ID: ${j.bookingRef}</div>`;
+        html += `<div class="booking-ref">Booking ref: ${j.bookingRef}</div>`;
       }
 
       html += `</div>`;
@@ -646,27 +741,34 @@
       </div>`;
 
       if (l.changeMinutes) {
-        html += `<div class="change-marker">${l.changeMinutes} min connection at ${l.changeat || leg.legs[i+1]?.from || ''}</div>`;
+        const nextStation = leg.legs[i + 1]?.from || '';
+        html += `<div class="change-marker">${l.changeMinutes} min connection at ${nextStation}</div>`;
       }
     });
 
-    const lastLeg = leg.legs[leg.legs.length - 1];
     html += `<div class="leg">
       <div class="leg-dot"></div>
       <div class="leg-time">${leg.arrival}</div>
       <div class="leg-station">${leg.to}</div>
-    </div>`;
+    </div></div>`;
 
-    html += `</div>`;
     return html;
   }
 
   function toggleCard(id) {
-    const card = document.getElementById('card-' + id);
-    card.classList.toggle('expanded');
+    document.getElementById('card-' + id).classList.toggle('expanded');
   }
 
+  // Initial load
   loadJourneys();
+
+  // Poll every 5 minutes
+  setInterval(loadJourneys, POLL_INTERVAL);
+
+  // Refresh when tab becomes visible again (e.g. switching back on phone)
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') loadJourneys();
+  });
 </script>
 </body>
 </html>
