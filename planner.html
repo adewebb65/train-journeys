@@ -501,7 +501,10 @@
 
   // ── HELPERS ─────────────────────────────────────────────────────────────────
   function isoDate(d) {
-    return d.toISOString().slice(0, 10);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
   }
 
   function getWeekDates() {
@@ -516,9 +519,9 @@
     return days;
   }
 
-  function formatDayLabel(d, isToday) {
-    if (isToday) return 'Today';
-    if (isToday === false && d - new Date().setHours(0,0,0,0) === 86400000) return 'Tomorrow';
+  function formatDayLabel(d, index) {
+    if (index === 0) return 'Today';
+    if (index === 1) return 'Tomorrow';
     return d.toLocaleDateString('en-GB', { weekday: 'long' });
   }
 
@@ -548,9 +551,9 @@
     const days = getWeekDates();
     let html = '';
 
-    days.forEach(d => {
+    days.forEach((d, index) => {
       const iso = isoDate(d);
-      const isToday = d.getTime() === today.getTime();
+      const isToday = index === 0;
       const dayEvents = (events[iso] || []).sort((a, b) => {
         if (!a.time && !b.time) return 0;
         if (!a.time) return 1;
@@ -560,7 +563,7 @@
 
       html += `<div class="day-block">
         <div class="day-heading">
-          <span class="day-label${isToday ? ' today' : ''}">${formatDayLabel(d, isToday)}</span>
+          <span class="day-label${isToday ? ' today' : ''}">${formatDayLabel(d, index)}</span>
           <span class="day-date">${formatDayDate(d)}</span>
         </div>
         <div class="day-cards" id="day-${iso}">`;
