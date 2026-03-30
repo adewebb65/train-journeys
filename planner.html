@@ -566,6 +566,11 @@
       <input type="hidden" id="editId">
       <input type="hidden" id="editDate">
 
+      <div class="form-group" id="dateGroup" style="display:none">
+        <label class="form-label">Date</label>
+        <input class="form-input" id="fDate" type="date">
+      </div>
+
       <div class="form-group">
         <label class="form-label">Title</label>
         <input class="form-input" id="fTitle" type="text" placeholder="e.g. Dentist appointment" required>
@@ -592,12 +597,12 @@
         <textarea class="form-textarea" id="fNotes" placeholder="Any extra details…"></textarea>
       </div>
 
-      <div class="form-group">
+      <div class="form-group" id="iconGroup">
         <label class="form-label">Icon</label>
         <div class="icon-picker" id="iconPicker"></div>
       </div>
 
-      <div class="form-group">
+      <div class="form-group" id="colorGroup">
         <label class="form-label">Colour</label>
         <div class="color-picker" id="colorPicker"></div>
       </div>
@@ -807,21 +812,29 @@
   }
 
   function openModal(iso, ev) {
-    selectedIcon = ev ? ev.icon : ICONS[0];
-    selectedColor = ev ? ev.color : COLORS[0].key;
+    const isEdit = !!ev;
+    selectedIcon = isEdit ? ev.icon : ICONS[0];
+    selectedColor = isEdit ? ev.color : COLORS[0].key;
 
-    document.getElementById('editId').value = ev ? ev.id : '';
+    document.getElementById('editId').value = isEdit ? ev.id : '';
     document.getElementById('editDate').value = iso;
-    document.getElementById('fTitle').value = ev ? ev.title : '';
-    document.getElementById('fTime').value = ev ? (ev.time || '') : '';
-    document.getElementById('fDuration').value = ev ? (ev.duration || '') : '';
-    document.getElementById('fLocation').value = ev ? (ev.location || '') : '';
-    document.getElementById('fNotes').value = ev ? (ev.notes || '') : '';
-    document.getElementById('modalTitle').textContent = ev ? 'Edit event' : 'Add event';
-    document.getElementById('formSubmit').textContent = ev ? 'Save changes' : 'Save event';
+    document.getElementById('fDate').value = iso;
+    document.getElementById('fTitle').value = isEdit ? ev.title : '';
+    document.getElementById('fTime').value = isEdit ? (ev.time || '') : '';
+    document.getElementById('fDuration').value = isEdit ? (ev.duration || '') : '';
+    document.getElementById('fLocation').value = isEdit ? (ev.location || '') : '';
+    document.getElementById('fNotes').value = isEdit ? (ev.notes || '') : '';
+    document.getElementById('modalTitle').textContent = isEdit ? 'Edit event' : 'Add event';
+    document.getElementById('formSubmit').textContent = isEdit ? 'Save changes' : 'Save event';
 
-    buildIconPicker();
-    buildColorPicker();
+    document.getElementById('dateGroup').style.display = isEdit ? 'block' : 'none';
+    document.getElementById('iconGroup').style.display = isEdit ? 'none' : 'block';
+    document.getElementById('colorGroup').style.display = isEdit ? 'none' : 'block';
+
+    if (!isEdit) {
+      buildIconPicker();
+      buildColorPicker();
+    }
 
     document.getElementById('modalOverlay').classList.add('open');
     setTimeout(() => document.getElementById('fTitle').focus(), 300);
@@ -850,8 +863,15 @@
 
   function saveEvent(e) {
     e.preventDefault();
-    const iso = document.getElementById('editDate').value;
+    const originalIso = document.getElementById('editDate').value;
     const existingId = document.getElementById('editId').value;
+    const isEdit = !!existingId;
+    const newIso = isEdit ? document.getElementById('fDate').value : originalIso;
+
+    // Find existing event to preserve icon/color in edit mode
+    const existing = isEdit
+      ? (events[originalIso] || []).find(x => x.id === existingId)
+      : null;
 
     const ev = {
       id: existingId || uid(),
@@ -860,18 +880,18 @@
       duration: document.getElementById('fDuration').value.trim(),
       location: document.getElementById('fLocation').value.trim(),
       notes: document.getElementById('fNotes').value.trim(),
-      icon: selectedIcon,
-      color: selectedColor,
+      icon: isEdit ? (existing ? existing.icon : selectedIcon) : selectedIcon,
+      color: isEdit ? (existing ? existing.color : selectedColor) : selectedColor,
     };
 
-    if (!events[iso]) events[iso] = [];
-    if (existingId) {
-      const idx = events[iso].findIndex(x => x.id === existingId);
-      if (idx !== -1) events[iso][idx] = ev;
-      else events[iso].push(ev);
-    } else {
-      events[iso].push(ev);
+    if (isEdit) {
+      // Remove from original date
+      events[originalIso] = (events[originalIso] || []).filter(x => x.id !== existingId);
+      if (events[originalIso].length === 0) delete events[originalIso];
     }
+
+    if (!events[newIso]) events[newIso] = [];
+    events[newIso].push(ev);
 
     saveEvents();
     closeModal();
