@@ -241,20 +241,6 @@
       flex-shrink: 0;
     }
 
-    .action-btn {
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 16px;
-      padding: 4px;
-      border-radius: 6px;
-      opacity: 0.4;
-      transition: opacity 0.2s, background 0.2s;
-      line-height: 1;
-    }
-
-    .action-btn:hover { opacity: 1; background: #f0f2f5; }
-
     .chevron {
       font-size: 12px;
       color: #bbb;
@@ -263,6 +249,31 @@
     }
 
     .card.expanded .chevron { transform: rotate(180deg); }
+
+    .card-edit-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid #f0f2f5;
+    }
+
+    .action-btn {
+      flex: 1;
+      padding: 8px;
+      border-radius: 8px;
+      border: 1.5px solid #dde2ea;
+      background: white;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      color: #555;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .action-btn:hover { background: #f5f7fa; border-color: #c0c8d4; }
+    .action-btn.delete-btn { color: #c62828; border-color: #f5c6c6; }
+    .action-btn.delete-btn:hover { background: #fff0f0; border-color: #e57373; }
 
     /* DETAILS PANEL */
     .card-details {
@@ -499,7 +510,11 @@
       .add-btn { color: #4a7cf7; }
       .form-submit { background: #4a7cf7; }
       .form-submit:hover { background: #3a6de7; }
-      .action-btn:hover { background: #2a2f45; }
+      .action-btn { background: #1e2130; border-color: #2a2f45; color: #aaa; }
+      .action-btn:hover { background: #2a2f45; border-color: #3a3f55; }
+      .action-btn.delete-btn { color: #e57373; border-color: #4a2020; }
+      .action-btn.delete-btn:hover { background: #2a1818; border-color: #e57373; }
+      .card-edit-row { border-color: #2a2f45; }
       .meta-chip { color: #999; }
     }
   </style>
@@ -534,7 +549,7 @@
 
 <header>
   <h1>📅 Week Planner</h1>
-  <p id="subtitle">Rolling 7-day view</p>
+  <p id="subtitle">Rolling 2-week view</p>
 </header>
 
 <div class="planner" id="planner"></div>
@@ -624,7 +639,7 @@
     const days = [];
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    for (let i = 0; i < 7; i++) {
+    for (let i = 0; i < 14; i++) {
       const d = new Date(today);
       d.setDate(today.getDate() + i);
       days.push(d);
@@ -728,14 +743,18 @@
               ${metaChips.join('')}
             </div>
           </div>
-          <div class="card-actions" onclick="event.stopPropagation()">
-            <button class="action-btn" title="Edit" onclick="editEvent('${iso}','${ev.id}')">✏️</button>
-            <button class="action-btn" title="Delete" onclick="deleteEvent('${iso}','${ev.id}')">🗑️</button>
+          <div class="card-actions">
             <span class="chevron">▾</span>
           </div>
         </div>
-        ${detailFields.length ? `<div class="card-details">${detailFields.join('')}</div>` : ''}
-      </div>`;
+        <div class="card-details" onclick="event.stopPropagation()">
+          ${detailFields.join('')}
+          <div class="card-edit-row">
+            <button class="action-btn" onclick="editEvent('${iso}','${ev.id}')">✏️ Edit</button>
+            <button class="action-btn delete-btn" onclick="deleteEvent('${iso}','${ev.id}')">🗑️ Delete</button>
+          </div>
+        </div>
+      `;
   }
 
   function esc(str) {
