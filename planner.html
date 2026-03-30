@@ -19,6 +19,93 @@
       min-height: 100vh;
     }
 
+    /* PIN SCREEN */
+    #pinScreen {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      z-index: 999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 32px;
+    }
+
+    #pinScreen h2 {
+      color: white;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+
+    #pinScreen p {
+      color: rgba(255,255,255,0.5);
+      font-size: 13px;
+      margin-top: -24px;
+    }
+
+    .pin-dots {
+      display: flex;
+      gap: 16px;
+    }
+
+    .pin-dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      transition: background 0.15s;
+    }
+
+    .pin-dot.filled { background: white; }
+
+    .pin-pad {
+      display: grid;
+      grid-template-columns: repeat(3, 72px);
+      grid-template-rows: repeat(4, 72px);
+      gap: 12px;
+    }
+
+    .pin-key {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255,255,255,0.1);
+      color: white;
+      font-size: 22px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s, transform 0.1s;
+      font-family: inherit;
+    }
+
+    .pin-key:active { background: rgba(255,255,255,0.25); transform: scale(0.93); }
+    .pin-key.empty { background: transparent; cursor: default; pointer-events: none; }
+    .pin-key.delete { font-size: 18px; }
+
+    .pin-error {
+      color: #ff6b6b;
+      font-size: 13px;
+      font-weight: 600;
+      min-height: 18px;
+      text-align: center;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-8px); }
+      40% { transform: translateX(8px); }
+      60% { transform: translateX(-6px); }
+      80% { transform: translateX(6px); }
+    }
+
+    .pin-dots.shake { animation: shake 0.4s ease; }
+
     header {
       background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
       color: white;
@@ -419,6 +506,32 @@
 </head>
 <body>
 
+<div id="pinScreen">
+  <h2>📅 Week Planner</h2>
+  <p>Enter your PIN to continue</p>
+  <div class="pin-dots" id="pinDots">
+    <div class="pin-dot" id="d0"></div>
+    <div class="pin-dot" id="d1"></div>
+    <div class="pin-dot" id="d2"></div>
+    <div class="pin-dot" id="d3"></div>
+  </div>
+  <div class="pin-error" id="pinError"></div>
+  <div class="pin-pad">
+    <button class="pin-key" onclick="pinKey('1')">1</button>
+    <button class="pin-key" onclick="pinKey('2')">2</button>
+    <button class="pin-key" onclick="pinKey('3')">3</button>
+    <button class="pin-key" onclick="pinKey('4')">4</button>
+    <button class="pin-key" onclick="pinKey('5')">5</button>
+    <button class="pin-key" onclick="pinKey('6')">6</button>
+    <button class="pin-key" onclick="pinKey('7')">7</button>
+    <button class="pin-key" onclick="pinKey('8')">8</button>
+    <button class="pin-key" onclick="pinKey('9')">9</button>
+    <button class="pin-key empty"></button>
+    <button class="pin-key" onclick="pinKey('0')">0</button>
+    <button class="pin-key delete" onclick="pinDelete()">⌫</button>
+  </div>
+</div>
+
 <header>
   <h1>📅 Week Planner</h1>
   <p id="subtitle">Rolling 7-day view</p>
@@ -761,6 +874,48 @@
   }
 
   // ── INIT ────────────────────────────────────────────────────────────────────
+  // ── PIN ──────────────────────────────────────────────────────────────────────
+  const CORRECT_PIN = '5267';
+  let pinEntry = '';
+
+  function pinKey(digit) {
+    if (pinEntry.length >= 4) return;
+    pinEntry += digit;
+    updatePinDots();
+    if (pinEntry.length === 4) checkPin();
+  }
+
+  function pinDelete() {
+    pinEntry = pinEntry.slice(0, -1);
+    updatePinDots();
+    document.getElementById('pinError').textContent = '';
+  }
+
+  function updatePinDots() {
+    for (let i = 0; i < 4; i++) {
+      document.getElementById('d' + i).classList.toggle('filled', i < pinEntry.length);
+    }
+  }
+
+  function checkPin() {
+    if (pinEntry === CORRECT_PIN) {
+      sessionStorage.setItem('plannerAuth', '1');
+      document.getElementById('pinScreen').style.display = 'none';
+    } else {
+      const dots = document.getElementById('pinDots');
+      dots.classList.add('shake');
+      document.getElementById('pinError').textContent = 'Incorrect PIN';
+      setTimeout(() => { dots.classList.remove('shake'); }, 400);
+      pinEntry = '';
+      updatePinDots();
+    }
+  }
+
+  // Show or skip PIN screen
+  if (sessionStorage.getItem('plannerAuth') === '1') {
+    document.getElementById('pinScreen').style.display = 'none';
+  }
+
   pruneOldEvents();
   render();
 </script>
